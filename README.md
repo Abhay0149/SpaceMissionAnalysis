@@ -1,6 +1,4 @@
-<p align="center">
-<img src="banner.png" alt="Space Mission Analytics Banner"/>
-</p>
+
 
 <h1 align="center">🚀 Space Mission Analytics</h1>
 
