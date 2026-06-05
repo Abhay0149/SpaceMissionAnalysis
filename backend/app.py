@@ -4,6 +4,7 @@ import pandas as pd
 import pickle
 import random
 import numpy as np
+import os
 
 # ======================
 # App setup
@@ -12,14 +13,23 @@ app = Flask(__name__, static_folder="../frontend")
 CORS(app)
 
 # ======================
+# Base Directory
+# ======================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ======================
 # Load dataset
 # ======================
-df = pd.read_csv("../dataset/space_missions_dataset.csv")
+df = pd.read_csv(
+    os.path.join(BASE_DIR, "../dataset/space_missions_dataset.csv")
+)
 
 # ======================
 # Load ML model
 # ======================
-model = pickle.load(open("mission_model.pkl", "rb"))
+model = pickle.load(
+    open(os.path.join(BASE_DIR, "mission_model.pkl"), "rb")
+)
 
 # ======================
 # Serve Frontend
@@ -27,6 +37,7 @@ model = pickle.load(open("mission_model.pkl", "rb"))
 @app.route("/")
 def home():
     return send_from_directory(app.static_folder, "index.html")
+
 
 @app.route("/<path:path>")
 def static_files(path):
@@ -59,7 +70,9 @@ def mission_types():
     data = df["Mission Type"].value_counts().to_dict()
 
     result = []
+
     for name, count in data.items():
+
         result.append({
             "name": name,
             "count": int(count)
@@ -79,6 +92,7 @@ def predict(payload):
         payload = float(payload)
 
         if payload <= 0:
+
             return jsonify({
                 "status": "Invalid Payload ⚠️",
                 "success": 0,
@@ -89,17 +103,18 @@ def predict(payload):
         if payload > 5000:
             payload = 5000
 
-        # smooth success curve (works for ANY payload)
+        # smooth success curve
         base_success = 92 * np.exp(-payload / 3500)
 
-        # small variation so results don't look robotic
+        # random variation
         noise = random.uniform(-3, 3)
 
         success_percent = base_success + noise
 
-        # clamp realistic range
+        # realistic range
         if success_percent > 95:
             success_percent = 95
+
         if success_percent < 10:
             success_percent = 10
 
